@@ -1,0 +1,17 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "Capability for all windows",
+  "windows": ["picker", "preferences"],
+  "permissions": [
+    "core:default",
+    "opener:default",
+    "core:window:allow-show",
+    "core:window:allow-hide",
+    "core:window:allow-close",
+    "core:window:allow-set-focus",
+    "core:window:allow-set-position",
+    "core:window:allow-set-size",
+    "deep-link:default"
+  ]
+}
