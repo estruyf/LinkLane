@@ -105,8 +105,11 @@ LSSetDefaultHandlerForURLScheme("https" as CFString, "com.eliostruyf.linklane" a
 }
 
 #[tauri::command]
-pub fn factory_reset(state: State<'_, AppState>) {
+pub fn factory_reset(app: tauri::AppHandle, state: State<'_, AppState>) {
     let mut settings = state.settings.lock().unwrap();
     *settings = crate::settings::Settings::default();
     crate::settings::save_settings(&settings);
+
+    use tauri::Emitter;
+    app.emit("apps-updated", ()).ok();
 }

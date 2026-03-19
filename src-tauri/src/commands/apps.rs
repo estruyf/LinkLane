@@ -12,6 +12,7 @@ pub struct InstalledApp {
     pub name: String,
     pub hotkey: Option<String>,
     pub icon: Option<String>,
+    pub is_hidden: bool,
 }
 
 fn scan_installed_app_names() -> Vec<String> {
@@ -163,6 +164,7 @@ pub fn get_installed_apps(state: State<'_, AppState>) -> Vec<InstalledApp> {
                 name: entry.name.clone(),
                 hotkey: entry.hotkey.clone(),
                 icon: icons.get(&entry.name).cloned(),
+                is_hidden: entry.is_hidden,
             });
         }
     }
@@ -174,6 +176,7 @@ pub fn get_installed_apps(state: State<'_, AppState>) -> Vec<InstalledApp> {
                 name: name.clone(),
                 hotkey: None,
                 icon: icons.get(name).cloned(),
+                is_hidden: false,
             });
         }
     }
@@ -182,9 +185,8 @@ pub fn get_installed_apps(state: State<'_, AppState>) -> Vec<InstalledApp> {
 }
 
 #[tauri::command]
-pub fn get_installed_app_count(state: State<'_, AppState>) -> usize {
-    let settings = state.settings.lock().unwrap();
-    settings.apps.iter().filter(|a| a.is_installed).count()
+pub fn get_installed_app_count(_state: State<'_, AppState>) -> usize {
+    get_installed_browsers().len()
 }
 
 #[tauri::command]
@@ -204,6 +206,7 @@ pub fn rescan_apps(app: tauri::AppHandle, state: State<'_, AppState>) {
                 name: name.clone(),
                 hotkey: None,
                 is_installed: true,
+                is_hidden: false,
             });
         }
     }

@@ -6,8 +6,8 @@ export default function GeneralTab() {
   const [appCount, setAppCount] = useState(0);
 
   useEffect(() => {
-    invoke<boolean>("is_default_browser").then(setIsDefault).catch(() => {});
-    invoke<number>("get_installed_app_count").then(setAppCount).catch(() => {});
+    invoke<boolean>("is_default_browser").then(setIsDefault).catch(() => { });
+    invoke<number>("get_installed_app_count").then(setAppCount).catch(() => { });
   }, []);
 
   const handleSetDefault = async () => {
@@ -33,6 +33,8 @@ export default function GeneralTab() {
   const handleReset = async () => {
     if (confirm("Are you sure you wish to reset all preferences?")) {
       await invoke("factory_reset");
+      const count = await invoke<number>("get_installed_app_count");
+      setAppCount(count);
     }
   };
 

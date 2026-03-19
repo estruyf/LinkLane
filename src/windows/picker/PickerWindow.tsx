@@ -11,6 +11,7 @@ export default function PickerWindow() {
   const [url, setUrl] = useState("");
   const [noUrlMessage, setNoUrlMessage] = useState("");
   const { apps, loading, refetch } = useApps();
+  const visibleApps = apps.filter((app) => !app.is_hidden);
   const [focusedIndex, setFocusedIndex] = useState(0);
   const buttonRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
@@ -40,8 +41,20 @@ export default function PickerWindow() {
   useTauriEvent<string>("url-opened", handleUrlOpened);
   useTauriEvent("no-url-to-restore", handleNoUrl);
   useTauriEvent("invalid-copied-url", handleInvalidCopiedUrl);
-  useKeyboardNav({ apps, url, focusedIndex, setFocusedIndex, buttonRefs });
+  useKeyboardNav({
+    apps: visibleApps,
+    url,
+    focusedIndex,
+    setFocusedIndex,
+    buttonRefs,
+  });
   useHideOnBlur();
+
+  useEffect(() => {
+    if (focusedIndex >= visibleApps.length) {
+      setFocusedIndex(Math.max(visibleApps.length - 1, 0));
+    }
+  }, [focusedIndex, visibleApps.length]);
 
   // Re-fetch apps whenever the picker window gains focus
   useEffect(() => {
@@ -75,18 +88,24 @@ export default function PickerWindow() {
         </div>
       ) : (
         <div className="flex-1 overflow-y-auto px-2 pt-3 pb-1">
-          {apps.map((app, index) => (
-            <AppButton
-              key={app.name}
-              app={app}
-              url={url}
-              index={index}
-              focused={index === focusedIndex}
-              ref={(el) => {
-                buttonRefs.current[index] = el;
-              }}
-            />
-          ))}
+          {visibleApps.length > 0 ? (
+            visibleApps.map((app, index) => (
+              <AppButton
+                key={app.name}
+                app={app}
+                url={url}
+                index={index}
+                focused={index === focusedIndex}
+                ref={(el) => {
+                  buttonRefs.current[index] = el;
+                }}
+              />
+            ))
+          ) : (
+            <p className="px-2 py-3 text-center text-sm text-gray-500 dark:text-gray-400">
+              No visible browsers. Unhide one in Preferences.
+            </p>
+          )}
         </div>
       )}
 
