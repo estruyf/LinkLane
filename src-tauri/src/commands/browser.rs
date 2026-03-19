@@ -77,7 +77,7 @@ pub fn is_default_browser() -> bool {
     match output {
         Ok(out) => {
             let stdout = String::from_utf8_lossy(&out.stdout);
-            stdout.trim() == "com.eliostruyf.browser-picker"
+            stdout.trim() == "com.eliostruyf.linklane"
         }
         Err(_) => false,
     }
@@ -90,8 +90,8 @@ pub fn set_as_default_browser() {
         .args([
             "-e",
             r#"import CoreServices
-LSSetDefaultHandlerForURLScheme("http" as CFString, "com.eliostruyf.browser-picker" as CFString)
-LSSetDefaultHandlerForURLScheme("https" as CFString, "com.eliostruyf.browser-picker" as CFString)"#,
+LSSetDefaultHandlerForURLScheme("http" as CFString, "com.eliostruyf.linklane" as CFString)
+LSSetDefaultHandlerForURLScheme("https" as CFString, "com.eliostruyf.linklane" as CFString)"#,
         ])
         .output()
         .ok();

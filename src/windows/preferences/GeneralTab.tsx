@@ -45,7 +45,7 @@ export default function GeneralTab() {
         <div className="col-span-7">
           {isDefault ? (
             <span className="text-sm text-green-600 dark:text-green-400">
-              BrowserPicker is the default web browser
+              LinkLane is the default web browser
             </span>
           ) : (
             <button
@@ -57,7 +57,7 @@ export default function GeneralTab() {
             </button>
           )}
           <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-            System Settings will open — select BrowserPicker as the default web
+            System Settings will open — select LinkLane as the default web
             browser.
           </p>
         </div>

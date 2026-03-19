@@ -88,7 +88,7 @@ fn get_icon_base64(app_name: &str) -> Option<String> {
         return None;
     }
 
-    let tmp_png = format!("/tmp/browserpicker_icon_{}.png", app_name.replace(' ', "_"));
+    let tmp_png = format!("/tmp/linklane_icon_{}.png", app_name.replace(' ', "_"));
 
     let sips_result = Command::new("sips")
         .args(["-s", "format", "png", "-z", "64", "64", &icon_file, "--out", &tmp_png])

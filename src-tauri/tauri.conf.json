@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "BrowserPicker",
+  "productName": "LinkLane",
   "version": "0.1.0",
-  "identifier": "com.eliostruyf.browser-picker",
+  "identifier": "com.eliostruyf.linklane",
   "build": {
     "beforeDevCommand": "npm run dev",
     "devUrl": "http://localhost:1420",
@@ -13,7 +13,7 @@
     "windows": [
       {
         "label": "picker",
-        "title": "BrowserPicker",
+        "title": "LinkLane",
         "width": 250,
         "height": 320,
         "resizable": true,

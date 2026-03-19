@@ -8,7 +8,7 @@ use crate::show_picker_at_cursor;
 use crate::state::AppState;
 
 pub fn setup_tray(app: &tauri::App) -> Result<(), Box<dyn std::error::Error>> {
-    let quit = MenuItem::with_id(app, "quit", "Quit BrowserPicker", true, None::<&str>)?;
+    let quit = MenuItem::with_id(app, "quit", "Quit LinkLane", true, None::<&str>)?;
     let preferences = MenuItem::with_id(app, "preferences", "Preferences...", true, None::<&str>)?;
     let restore = MenuItem::with_id(app, "restore", "Restore Picker", true, None::<&str>)?;
 
@@ -17,7 +17,7 @@ pub fn setup_tray(app: &tauri::App) -> Result<(), Box<dyn std::error::Error>> {
     let _tray = TrayIconBuilder::new()
         .menu(&menu)
         .icon(app.default_window_icon().unwrap().clone())
-        .tooltip("BrowserPicker")
+        .tooltip("LinkLane")
         .on_menu_event(move |app, event| match event.id.as_ref() {
             "quit" => {
                 app.exit(0);
@@ -74,7 +74,7 @@ pub fn create_preferences_window(app: &tauri::AppHandle) {
         "preferences",
         tauri::WebviewUrl::App("/".into()),
     )
-    .title("BrowserPicker Preferences")
+    .title("LinkLane Preferences")
     .inner_size(600.0, 500.0)
     .resizable(false)
     .center()

@@ -2,5 +2,5 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 fn main() {
-    browser_picker_tauri_lib::run()
+    linklane_lib::run()
 }

@@ -28,7 +28,7 @@ impl Default for Settings {
 
 fn settings_path() -> PathBuf {
     let config_dir = dirs::config_dir().unwrap_or_else(|| PathBuf::from("."));
-    let app_dir = config_dir.join("com.eliostruyf.browser-picker");
+    let app_dir = config_dir.join("com.eliostruyf.linklane");
     fs::create_dir_all(&app_dir).ok();
     app_dir.join("settings.json")
 }

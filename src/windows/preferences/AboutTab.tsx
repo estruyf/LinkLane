@@ -10,7 +10,7 @@ export default function AboutTab() {
 
   return (
     <div className="flex flex-col items-center space-y-4 py-8">
-      <h1 className="text-3xl font-light tracking-wide">BrowserPicker</h1>
+      <h1 className="text-3xl font-light tracking-wide">LinkLane</h1>
       <p className="text-lg text-gray-500 dark:text-gray-400">
         The browser prompter for macOS
       </p>
