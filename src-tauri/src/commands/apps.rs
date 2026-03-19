@@ -1,6 +1,7 @@
 use std::process::Command;
 
 use serde::Serialize;
+use tauri::Emitter;
 use tauri::State;
 
 use crate::apps::known_apps;
@@ -45,7 +46,7 @@ pub fn get_installed_browsers() -> Vec<String> {
         .collect()
 }
 
-fn get_icon_base64(app_name: &str) -> Option<String> {
+pub(crate) fn get_icon_base64(app_name: &str) -> Option<String> {
     let app_path = format!("/Applications/{}.app", app_name);
     let home_app_path = format!(
         "{}/Applications/{}.app",
@@ -107,6 +108,43 @@ fn get_icon_base64(app_name: &str) -> Option<String> {
     Some(format!("data:image/png;base64,{}", b64))
 }
 
+pub(crate) fn cache_missing_icons(state: &AppState, app_names: &[String]) -> bool {
+    let missing: Vec<String> = {
+        let icons = state.icons.lock().unwrap();
+        app_names
+            .iter()
+            .filter(|name| !icons.contains_key(*name))
+            .cloned()
+            .collect()
+    };
+
+    if missing.is_empty() {
+        return false;
+    }
+
+    let mut discovered = Vec::new();
+    for name in &missing {
+        if let Some(icon) = get_icon_base64(name) {
+            discovered.push((name.clone(), icon));
+        }
+    }
+
+    if discovered.is_empty() {
+        return false;
+    }
+
+    let mut inserted_any = false;
+    let mut icons = state.icons.lock().unwrap();
+    for (name, icon) in discovered {
+        if !icons.contains_key(&name) {
+            icons.insert(name, icon);
+            inserted_any = true;
+        }
+    }
+
+    inserted_any
+}
+
 #[tauri::command]
 pub fn get_installed_apps(state: State<'_, AppState>) -> Vec<InstalledApp> {
     let app_state = state.inner();
@@ -150,7 +188,7 @@ pub fn get_installed_app_count(state: State<'_, AppState>) -> usize {
 }
 
 #[tauri::command]
-pub fn rescan_apps(state: State<'_, AppState>) {
+pub fn rescan_apps(app: tauri::AppHandle, state: State<'_, AppState>) {
     let browser_names = get_installed_browsers();
     let mut settings = state.settings.lock().unwrap();
 
@@ -172,13 +210,6 @@ pub fn rescan_apps(state: State<'_, AppState>) {
 
     crate::settings::save_settings(&settings);
 
-    // Refresh icons in background
-    let mut icons = state.icons.lock().unwrap();
-    for name in &browser_names {
-        if !icons.contains_key(name) {
-            if let Some(icon) = get_icon_base64(name) {
-                icons.insert(name.clone(), icon);
-            }
-        }
-    }
+    cache_missing_icons(state.inner(), &browser_names);
+    app.emit("apps-updated", ()).ok();
 }

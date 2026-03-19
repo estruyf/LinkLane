@@ -3,16 +3,19 @@ use tauri::{
     tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
     Emitter, Manager,
 };
+use url::Url;
 
-use crate::show_picker_at_cursor;
+use crate::{handle_incoming_url, show_picker_at_cursor};
 use crate::state::AppState;
 
 pub fn setup_tray(app: &tauri::App) -> Result<(), Box<dyn std::error::Error>> {
     let quit = MenuItem::with_id(app, "quit", "Quit LinkLane", true, None::<&str>)?;
     let preferences = MenuItem::with_id(app, "preferences", "Preferences...", true, None::<&str>)?;
     let restore = MenuItem::with_id(app, "restore", "Restore Picker", true, None::<&str>)?;
+    let open_from_clipboard =
+        MenuItem::with_id(app, "open-from-clipboard", "Open Copied URL", true, None::<&str>)?;
 
-    let menu = Menu::with_items(app, &[&restore, &preferences, &quit])?;
+    let menu = Menu::with_items(app, &[&restore, &open_from_clipboard, &preferences, &quit])?;
 
     let _tray = TrayIconBuilder::new()
         .menu(&menu)
@@ -32,6 +35,9 @@ pub fn setup_tray(app: &tauri::App) -> Result<(), Box<dyn std::error::Error>> {
             }
             "restore" => {
                 restore_picker(app);
+            }
+            "open-from-clipboard" => {
+                open_picker_from_clipboard_url(app);
             }
             _ => {}
         })
@@ -68,6 +74,46 @@ fn restore_picker(app: &tauri::AppHandle) {
     show_picker_at_cursor(app);
 }
 
+fn open_picker_from_clipboard_url(app: &tauri::AppHandle) {
+    let Some(raw_text) = read_clipboard_text() else {
+        app.emit("invalid-copied-url", ()).ok();
+        show_picker_at_cursor(app);
+        return;
+    };
+
+    let url_text = raw_text.trim();
+
+    if is_valid_url(url_text) {
+        handle_incoming_url(app, url_text);
+    } else {
+        app.emit("invalid-copied-url", ()).ok();
+        show_picker_at_cursor(app);
+    }
+}
+
+fn read_clipboard_text() -> Option<String> {
+    let output = std::process::Command::new("pbpaste").output().ok()?;
+    if !output.status.success() {
+        return None;
+    }
+
+    let text = String::from_utf8(output.stdout).ok()?;
+    if text.trim().is_empty() {
+        return None;
+    }
+
+    Some(text)
+}
+
+fn is_valid_url(value: &str) -> bool {
+    Url::parse(value)
+        .map(|url| {
+            matches!(url.scheme(), "http" | "https")
+                && url.host_str().is_some()
+        })
+        .unwrap_or(false)
+}
+
 pub fn create_preferences_window(app: &tauri::AppHandle) {
     let _window = tauri::WebviewWindowBuilder::new(
         app,
@@ -77,6 +123,7 @@ pub fn create_preferences_window(app: &tauri::AppHandle) {
     .title("LinkLane Preferences")
     .inner_size(600.0, 500.0)
     .resizable(false)
+    .visible(false)
     .center()
     .build()
     .ok();

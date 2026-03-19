@@ -1,7 +1,9 @@
-import { useState } from "react";
+import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
+import { lazy, Suspense, useEffect, useState } from "react";
 import GeneralTab from "./GeneralTab";
-import AppsTab from "./AppsTab";
-import AboutTab from "./AboutTab";
+
+const AppsTab = lazy(() => import("./AppsTab"));
+const AboutTab = lazy(() => import("./AboutTab"));
 
 type Tab = "general" | "apps" | "about";
 
@@ -13,6 +15,49 @@ const tabs: { id: Tab; label: string }[] = [
 
 export default function PreferencesWindow() {
   const [activeTab, setActiveTab] = useState<Tab>("general");
+  const [appsTabVisited, setAppsTabVisited] = useState(false);
+  const [aboutTabVisited, setAboutTabVisited] = useState(false);
+
+  useEffect(() => {
+    if (activeTab === "apps") {
+      setAppsTabVisited(true);
+    }
+
+    if (activeTab === "about") {
+      setAboutTabVisited(true);
+    }
+  }, [activeTab]);
+
+  useEffect(() => {
+    // Warm lazy chunks in the background so first tab switch feels instant.
+    const preloadId = window.setTimeout(() => {
+      void import("./AppsTab");
+      void import("./AboutTab");
+    }, 0);
+
+    return () => {
+      window.clearTimeout(preloadId);
+    };
+  }, []);
+
+  useEffect(() => {
+    const window = getCurrentWebviewWindow();
+    let unlisten: (() => void) | undefined;
+
+    window
+      .onCloseRequested(async (event) => {
+        event.preventDefault();
+        await window.hide();
+      })
+      .then((fn) => {
+        unlisten = fn;
+      })
+      .catch(() => {});
+
+    return () => {
+      unlisten?.();
+    };
+  }, []);
 
   return (
     <div className="flex h-screen w-screen flex-col bg-white text-gray-800 dark:bg-gray-900 dark:text-gray-200">
@@ -34,9 +79,25 @@ export default function PreferencesWindow() {
       </div>
 
       <div className="flex-1 overflow-auto p-6">
-        {activeTab === "general" && <GeneralTab />}
-        {activeTab === "apps" && <AppsTab />}
-        {activeTab === "about" && <AboutTab />}
+        <div className={activeTab === "general" ? "block" : "hidden"}>
+          <GeneralTab />
+        </div>
+
+        {appsTabVisited && (
+          <div className={activeTab === "apps" ? "block" : "hidden"}>
+            <Suspense fallback={<div className="text-sm text-gray-500">Loading apps...</div>}>
+              <AppsTab />
+            </Suspense>
+          </div>
+        )}
+
+        {aboutTabVisited && (
+          <div className={activeTab === "about" ? "block" : "hidden"}>
+            <Suspense fallback={<div className="text-sm text-gray-500">Loading about...</div>}>
+              <AboutTab />
+            </Suspense>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -29,8 +29,17 @@ export default function PickerWindow() {
     }, 2000);
   }, []);
 
+  const handleInvalidCopiedUrl = useCallback(() => {
+    setNoUrlMessage("Clipboard does not contain a valid URL.");
+    setTimeout(() => {
+      setNoUrlMessage("");
+      getCurrentWebviewWindow().hide();
+    }, 2000);
+  }, []);
+
   useTauriEvent<string>("url-opened", handleUrlOpened);
   useTauriEvent("no-url-to-restore", handleNoUrl);
+  useTauriEvent("invalid-copied-url", handleInvalidCopiedUrl);
   useKeyboardNav({ apps, url, focusedIndex, setFocusedIndex, buttonRefs });
   useHideOnBlur();
 
@@ -53,7 +62,7 @@ export default function PickerWindow() {
   }, [refetch]);
 
   return (
-    <div className="flex h-screen w-screen select-none flex-col bg-white/80 dark:bg-gray-900/90 dark:text-white">
+    <div className="flex h-screen w-screen select-none flex-col bg-white/80 dark:bg-gray-900/90 dark:text-white rounded-xl">
       {noUrlMessage ? (
         <div className="flex flex-1 items-center justify-center px-4">
           <p className="text-center text-sm text-gray-500 dark:text-gray-400">

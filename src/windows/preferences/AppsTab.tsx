@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { useApps } from "../../hooks/useApps";
 import {
@@ -81,11 +81,12 @@ export default function AppsTab() {
   const [apps, setApps] = useState<InstalledApp[]>([]);
   const [initialized, setInitialized] = useState(false);
 
-  // Sync from useApps when data first arrives
-  if (!initialized && !loading && initialApps.length > 0) {
-    setApps(initialApps);
-    setInitialized(true);
-  }
+  useEffect(() => {
+    if (!initialized && !loading && initialApps.length > 0) {
+      setApps(initialApps);
+      setInitialized(true);
+    }
+  }, [initialApps, loading, initialized]);
 
   const sensors = useSensors(
     useSensor(PointerSensor),

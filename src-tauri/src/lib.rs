@@ -40,6 +40,9 @@ pub fn run() {
             #[cfg(target_os = "macos")]
             app.set_activation_policy(tauri::ActivationPolicy::Accessory);
 
+            // Pre-create a hidden preferences window so first open is instant.
+            tray::create_preferences_window(&app.handle().clone());
+
             // Set up system tray
             tray::setup_tray(app)?;
 
@@ -62,7 +65,10 @@ pub fn run() {
             let handle2 = app.handle().clone();
             std::thread::spawn(move || {
                 let state = handle2.state::<AppState>();
-                rescan_apps_initial(&state);
+                let changed = rescan_apps_initial(&state);
+                if changed {
+                    handle2.emit("apps-updated", ()).ok();
+                }
             });
 
             Ok(())
@@ -71,7 +77,7 @@ pub fn run() {
         .expect("error while running tauri application");
 }
 
-fn handle_incoming_url(app: &tauri::AppHandle, url: &str) {
+pub(crate) fn handle_incoming_url(app: &tauri::AppHandle, url: &str) {
     // Store URL in state
     let state = app.state::<AppState>();
     {
@@ -87,7 +93,7 @@ fn handle_incoming_url(app: &tauri::AppHandle, url: &str) {
 
 pub(crate) fn show_picker_at_cursor(app: &tauri::AppHandle) {
     if let Some(window) = app.get_webview_window("picker") {
-        if let (Ok(cursor_pos), Ok(window_size)) = (window.cursor_position(), window.outer_size()) {
+        if let (Ok(cursor_pos), Ok(window_size)) = (app.cursor_position(), window.outer_size()) {
             let nudge_x = -125.0;
             let nudge_y = -30.0;
 
@@ -124,23 +130,28 @@ pub(crate) fn show_picker_at_cursor(app: &tauri::AppHandle) {
     }
 }
 
-fn rescan_apps_initial(state: &AppState) {
+fn rescan_apps_initial(state: &AppState) -> bool {
     let browser_names = commands::apps::get_installed_browsers();
-    let mut settings = state.settings.lock().unwrap();
+    {
+        let mut settings = state.settings.lock().unwrap();
 
-    for entry in &mut settings.apps {
-        entry.is_installed = browser_names.contains(&entry.name);
-    }
-
-    for name in &browser_names {
-        if !settings.apps.iter().any(|a| &a.name == name) {
-            settings.apps.push(settings::AppEntry {
-                name: name.clone(),
-                hotkey: None,
-                is_installed: true,
-            });
+        for entry in &mut settings.apps {
+            entry.is_installed = browser_names.contains(&entry.name);
         }
+
+        for name in &browser_names {
+            if !settings.apps.iter().any(|a| &a.name == name) {
+                settings.apps.push(settings::AppEntry {
+                    name: name.clone(),
+                    hotkey: None,
+                    is_installed: true,
+                });
+            }
+        }
+
+        settings::save_settings(&settings);
     }
 
-    settings::save_settings(&settings);
+    // Populate icon cache at startup so picker/preferences can render real app icons.
+    commands::apps::cache_missing_icons(state, &browser_names)
 }
