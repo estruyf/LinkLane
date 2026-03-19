@@ -4,6 +4,7 @@ use tauri::{
     Emitter, Manager,
 };
 
+use crate::show_picker_at_cursor;
 use crate::state::AppState;
 
 pub fn setup_tray(app: &tauri::App) -> Result<(), Box<dyn std::error::Error>> {
@@ -57,20 +58,14 @@ fn restore_picker(app: &tauri::AppHandle) {
     if url.is_empty() {
         app.emit("no-url-to-restore", ()).ok();
         // Still show picker briefly so user sees the message
-        if let Some(window) = app.get_webview_window("picker") {
-            window.show().ok();
-            window.set_focus().ok();
-        }
+        show_picker_at_cursor(app);
         return;
     }
 
     // Re-emit the URL so the picker refreshes with it
     app.emit("url-opened", url).ok();
 
-    if let Some(window) = app.get_webview_window("picker") {
-        window.show().ok();
-        window.set_focus().ok();
-    }
+    show_picker_at_cursor(app);
 }
 
 pub fn create_preferences_window(app: &tauri::AppHandle) {

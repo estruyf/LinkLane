@@ -82,58 +82,43 @@ fn handle_incoming_url(app: &tauri::AppHandle, url: &str) {
     // Emit event to picker window
     app.emit("url-opened", url.to_string()).ok();
 
-    // Show picker window near cursor
+    show_picker_at_cursor(app);
+}
+
+pub(crate) fn show_picker_at_cursor(app: &tauri::AppHandle) {
     if let Some(window) = app.get_webview_window("picker") {
-        if let Ok(cursor_pos) = window.cursor_position() {
-            let picker_width = 250.0;
-            let picker_height = 400.0;
+        if let (Ok(cursor_pos), Ok(window_size)) = (window.cursor_position(), window.outer_size()) {
+            let nudge_x = -125.0;
+            let nudge_y = -30.0;
 
-            // cursor_position() returns physical pixels
-            let scale = window.scale_factor().unwrap_or(1.0);
-            let win_w = picker_width * scale;
-            let win_h = picker_height * scale;
+            let mut x = cursor_pos.x + nudge_x;
+            let mut y = cursor_pos.y + nudge_y;
 
-            // Position: center horizontally on cursor, top at cursor
-            let mut x = cursor_pos.x - win_w / 2.0;
-            let mut y = cursor_pos.y;
-
-            // Clamp to the monitor the cursor is on
-            if let Ok(Some(monitor)) = window.current_monitor() {
+            if let Ok(Some(monitor)) = window.monitor_from_point(cursor_pos.x, cursor_pos.y) {
                 let mon_pos = monitor.position();
                 let mon_size = monitor.size();
 
                 let mon_x = mon_pos.x as f64;
                 let mon_y = mon_pos.y as f64;
-                let mon_w = mon_size.width as f64;
-                let mon_h = mon_size.height as f64;
+                let max_x = mon_x + mon_size.width as f64 - window_size.width as f64;
+                let max_y = mon_y + mon_size.height as f64 - window_size.height as f64;
 
-                // Keep within horizontal bounds
-                if x < mon_x {
-                    x = mon_x;
-                }
-                if x + win_w > mon_x + mon_w {
-                    x = mon_x + mon_w - win_w;
-                }
-
-                // If picker would go below screen, show it above cursor instead
-                if y + win_h > mon_y + mon_h {
-                    y = cursor_pos.y - win_h;
-                }
-
-                // Keep within vertical bounds
-                if y < mon_y {
-                    y = mon_y;
-                }
+                x = x.clamp(mon_x, max_x.max(mon_x));
+                y = y.clamp(mon_y, max_y.max(mon_y));
             }
 
             window
                 .set_position(tauri::Position::Physical(tauri::PhysicalPosition {
-                    x: x as i32,
-                    y: y as i32,
+                    x: x.round() as i32,
+                    y: y.round() as i32,
                 }))
                 .ok();
         }
 
+        #[cfg(target_os = "macos")]
+        app.show().ok();
+
+        window.unminimize().ok();
         window.show().ok();
         window.set_focus().ok();
     }

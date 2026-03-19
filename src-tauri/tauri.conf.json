@@ -15,7 +15,7 @@
         "label": "picker",
         "title": "BrowserPicker",
         "width": 250,
-        "height": 400,
+        "height": 320,
         "resizable": true,
         "decorations": false,
         "transparent": true,
