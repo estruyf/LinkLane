@@ -1,6 +1,6 @@
 {
   "name": "linklane",
-  "private": true,
+  "description": "Every link finds its lane to the right browser",
   "version": "0.1.0",
   "type": "module",
   "scripts": {
