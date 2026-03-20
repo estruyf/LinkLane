@@ -7,6 +7,8 @@ pub struct AppEntry {
     pub name: String,
     pub hotkey: Option<String>,
     pub is_installed: bool,
+    #[serde(default)]
+    pub is_hidden: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
