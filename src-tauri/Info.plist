@@ -55,5 +55,7 @@
 			<string>Default</string>
 		</dict>
 	</array>
+	<key>LSUIElement</key>
+	<true/>
 </dict>
 </plist>

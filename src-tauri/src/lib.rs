@@ -99,9 +99,6 @@ pub(crate) fn handle_incoming_url(app: &tauri::AppHandle, url: &str) {
 
 pub(crate) fn show_picker(app: &tauri::AppHandle) {
     if let Some(window) = app.get_webview_window("picker") {
-        #[cfg(target_os = "macos")]
-        app.show().ok();
-
         window.unminimize().ok();
         window.show().ok();
         window.set_focus().ok();
