@@ -94,53 +94,18 @@ pub(crate) fn handle_incoming_url(app: &tauri::AppHandle, url: &str) {
     // Emit event to picker window
     app.emit("url-opened", url.to_string()).ok();
 
-    show_picker_on_active_monitor(app);
+    show_picker(app);
 }
 
-pub(crate) fn show_picker_on_active_monitor(app: &tauri::AppHandle) {
+pub(crate) fn show_picker(app: &tauri::AppHandle) {
     if let Some(window) = app.get_webview_window("picker") {
-        // Use cursor position to detect which monitor is currently active,
-        // falling back to the primary monitor.
-        let monitor = app
-            .cursor_position()
-            .ok()
-            .and_then(|pos| app.monitor_from_point(pos.x, pos.y).ok().flatten())
-            .or_else(|| app.primary_monitor().ok().flatten());
-
-        if let Some(monitor) = monitor {
-            let scale = monitor.scale_factor();
-            let mon_pos = monitor.position();
-            let mon_size = monitor.size();
-
-            let mon_x = mon_pos.x as f64;
-            let mon_y = mon_pos.y as f64;
-            // monitor.position() is logical on macOS while monitor/window sizes are physical.
-            // Convert sizes to logical points before calculating centered coordinates.
-            let logical_mon_w = mon_size.width as f64 / scale;
-            let logical_mon_h = mon_size.height as f64 / scale;
-            let (logical_win_w, logical_win_h) = window
-                .outer_size()
-                .map(|s| (s.width as f64 / scale, s.height as f64 / scale))
-                .unwrap_or((250.0, 100.0));
-
-            let x = mon_x + ((logical_mon_w - logical_win_w) / 2.0);
-            let y = mon_y + ((logical_mon_h - logical_win_h) / 2.0);
-
-            // Use Logical position so Tauri doesn't re-apply the window's current scale.
-            window
-                .set_position(tauri::Position::Logical(tauri::LogicalPosition {
-                    x: x.round(),
-                    y: y.round(),
-                }))
-                .ok();
-        }
-
         #[cfg(target_os = "macos")]
         app.show().ok();
 
         window.unminimize().ok();
         window.show().ok();
         window.set_focus().ok();
+        window.center().ok();
     }
 }
 
