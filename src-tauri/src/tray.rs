@@ -6,7 +6,7 @@ use tauri::{
 };
 use url::Url;
 
-use crate::{handle_incoming_url, show_picker_at_cursor};
+use crate::{handle_incoming_url, show_picker_on_active_monitor};
 use crate::state::AppState;
 
 pub fn setup_tray(app: &tauri::App) -> Result<(), Box<dyn std::error::Error>> {
@@ -66,20 +66,20 @@ fn restore_picker(app: &tauri::AppHandle) {
     if url.is_empty() {
         app.emit("no-url-to-restore", ()).ok();
         // Still show picker briefly so user sees the message
-        show_picker_at_cursor(app);
+        show_picker_on_active_monitor(app);
         return;
     }
 
     // Re-emit the URL so the picker refreshes with it
     app.emit("url-opened", url).ok();
 
-    show_picker_at_cursor(app);
+    show_picker_on_active_monitor(app);
 }
 
 fn open_picker_from_clipboard_url(app: &tauri::AppHandle) {
     let Some(raw_text) = read_clipboard_text() else {
         app.emit("invalid-copied-url", ()).ok();
-        show_picker_at_cursor(app);
+        show_picker_on_active_monitor(app);
         return;
     };
 
@@ -89,7 +89,7 @@ fn open_picker_from_clipboard_url(app: &tauri::AppHandle) {
         handle_incoming_url(app, url_text);
     } else {
         app.emit("invalid-copied-url", ()).ok();
-        show_picker_at_cursor(app);
+        show_picker_on_active_monitor(app);
     }
 }
 

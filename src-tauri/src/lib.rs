@@ -94,45 +94,39 @@ pub(crate) fn handle_incoming_url(app: &tauri::AppHandle, url: &str) {
     // Emit event to picker window
     app.emit("url-opened", url.to_string()).ok();
 
-    show_picker_at_cursor(app);
+    show_picker_on_active_monitor(app);
 }
 
-pub(crate) fn show_picker_at_cursor(app: &tauri::AppHandle) {
+pub(crate) fn show_picker_on_active_monitor(app: &tauri::AppHandle) {
     if let Some(window) = app.get_webview_window("picker") {
-        if let Ok(cursor_pos) = app.cursor_position() {
-            let nudge_x = -125.0;
-            let nudge_y = -30.0;
+        // Use cursor position to detect which monitor is currently active,
+        // falling back to the primary monitor.
+        let monitor = app
+            .cursor_position()
+            .ok()
+            .and_then(|pos| app.monitor_from_point(pos.x, pos.y).ok().flatten())
+            .or_else(|| app.primary_monitor().ok().flatten());
 
-            let mut x = cursor_pos.x + nudge_x;
-            let mut y = cursor_pos.y + nudge_y;
+        if let Some(monitor) = monitor {
+            let scale = monitor.scale_factor();
+            let mon_pos = monitor.position();
+            let mon_size = monitor.size();
 
-            if let Ok(Some(monitor)) = app.monitor_from_point(cursor_pos.x, cursor_pos.y) {
-                let scale = monitor.scale_factor();
-                let mon_pos = monitor.position();
-                let mon_size = monitor.size();
+            let mon_x = mon_pos.x as f64;
+            let mon_y = mon_pos.y as f64;
+            // monitor.position() is logical on macOS while monitor/window sizes are physical.
+            // Convert sizes to logical points before calculating centered coordinates.
+            let logical_mon_w = mon_size.width as f64 / scale;
+            let logical_mon_h = mon_size.height as f64 / scale;
+            let (logical_win_w, logical_win_h) = window
+                .outer_size()
+                .map(|s| (s.width as f64 / scale, s.height as f64 / scale))
+                .unwrap_or((250.0, 100.0));
 
-                let mon_x = mon_pos.x as f64;
-                let mon_y = mon_pos.y as f64;
-                // cursor_position() and monitor.position() are in logical (point) units on
-                // macOS. monitor.size() and window.outer_size() are in physical pixels, so
-                // divide by the scale factor to stay in the same logical coordinate space.
-                let logical_mon_w = mon_size.width as f64 / scale;
-                let logical_mon_h = mon_size.height as f64 / scale;
-                let (logical_win_w, logical_win_h) = window
-                    .outer_size()
-                    .map(|s| (s.width as f64 / scale, s.height as f64 / scale))
-                    .unwrap_or((250.0, 100.0));
+            let x = mon_x + ((logical_mon_w - logical_win_w) / 2.0);
+            let y = mon_y + ((logical_mon_h - logical_win_h) / 2.0);
 
-                let max_x = mon_x + logical_mon_w - logical_win_w;
-                let max_y = mon_y + logical_mon_h - logical_win_h;
-
-                x = x.clamp(mon_x, max_x.max(mon_x));
-                y = y.clamp(mon_y, max_y.max(mon_y));
-            }
-
-            // Use Logical position so Tauri doesn't re-apply the window's current scale
-            // factor — which would misplace the window when the picker is parked on a
-            // different (e.g. Retina 2×) screen than the target monitor.
+            // Use Logical position so Tauri doesn't re-apply the window's current scale.
             window
                 .set_position(tauri::Position::Logical(tauri::LogicalPosition {
                     x: x.round(),
