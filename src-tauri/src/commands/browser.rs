@@ -67,19 +67,28 @@ pub fn copy_url_to_clipboard(url: String) -> bool {
 
 #[tauri::command]
 pub fn is_default_browser() -> bool {
+    log::debug!("is_default_browser: checking default HTTP handler via swift");
+
     let output = Command::new("swift")
         .args([
             "-e",
-            r#"import CoreServices; let h = LSCopyDefaultHandlerForURLScheme("http" as CFString)?.takeRetainedValue() as String?; print(h ?? "")"#,
+            r#"import AppKit; if let u = NSWorkspace.shared.urlForApplication(toOpen: URL(string: "http://eliostruyf.com")!), let b = Bundle(url: u)?.bundleIdentifier { print(b) } else { print("") }"#,
         ])
         .output();
 
     match output {
         Ok(out) => {
             let stdout = String::from_utf8_lossy(&out.stdout);
-            stdout.trim() == "com.eliostruyf.linklane"
+            let handler = stdout.trim();
+            log::debug!("is_default_browser: current handler = {:?}", handler);
+            let result = handler == "com.eliostruyf.linklane";
+            log::debug!("is_default_browser: result = {}", result);
+            result
         }
-        Err(_) => false,
+        Err(e) => {
+            log::debug!("is_default_browser: swift command failed: {}", e);
+            false
+        }
     }
 }
 

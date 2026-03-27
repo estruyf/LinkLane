@@ -22,6 +22,7 @@ pub fn run() {
     let app_state = AppState::new(settings);
 
     tauri::Builder::default()
+        .plugin(tauri_plugin_log::Builder::new().level(log::LevelFilter::Debug).build())
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_deep_link::init())
         .manage(app_state)
