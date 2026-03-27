@@ -75,7 +75,7 @@ export default function PickerWindow() {
   }, [refetch]);
 
   return (
-    <div className="flex h-screen w-screen select-none flex-col bg-white/80 dark:bg-gray-900/90 dark:text-white rounded-xl">
+    <div className="flex h-screen w-screen select-none flex-col bg-white/80 dark:bg-gray-900/95 dark:text-white rounded-xl">
       {noUrlMessage ? (
         <div className="flex flex-1 items-center justify-center px-4">
           <p className="text-center text-sm text-gray-500 dark:text-gray-400">
