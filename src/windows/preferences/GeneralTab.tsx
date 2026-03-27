@@ -39,65 +39,72 @@ export default function GeneralTab() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-12 gap-6">
-        <div className="col-span-5 text-right text-sm font-medium">
-          Default web browser:
+    <div className="divide-y divide-gray-200 dark:divide-gray-700">
+      {/* Default browser */}
+      <div className="flex items-start justify-between py-4">
+        <div>
+          <p className="text-sm font-medium">Default web browser</p>
+          {!isDefault && (
+            <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
+              System Settings will open — select LinkLane to confirm.
+            </p>
+          )}
         </div>
-        <div className="col-span-7">
+        <div className="ml-6 shrink-0">
           {isDefault ? (
-            <span className="text-sm text-green-600 dark:text-green-400">
-              LinkLane is the default web browser
+            <span className="inline-flex items-center gap-1.5 text-sm text-green-600 dark:text-green-400">
+              <svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z" clipRule="evenodd" />
+              </svg>
+              Set as default
             </span>
           ) : (
             <button
               onClick={handleSetDefault}
-              className="rounded-lg bg-blue-500 px-3 py-1.5 text-sm text-white hover:bg-blue-600"
+              className="rounded-md bg-blue-500 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-600 active:bg-blue-700"
               type="button"
             >
-              Set As Default Browser
+              Set as default
             </button>
           )}
-          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-            System Settings will open — select LinkLane as the default web
-            browser.
-          </p>
         </div>
       </div>
 
-      <div className="grid grid-cols-12 gap-6">
-        <div className="col-span-5 text-right text-sm font-medium">
-          Find apps:
+      {/* Find apps */}
+      <div className="flex items-start justify-between py-4">
+        <div>
+          <p className="text-sm font-medium">Browser apps</p>
+          <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
+            {appCount} compatible {appCount === 1 ? "app" : "apps"} found.
+          </p>
         </div>
-        <div className="col-span-7">
+        <div className="ml-6 shrink-0">
           <button
             onClick={handleRescan}
-            className="rounded-lg bg-gray-200 px-3 py-1.5 text-sm hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600"
+            className="rounded-md bg-gray-100 px-3 py-1.5 text-sm font-medium hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600"
             type="button"
           >
             Rescan
           </button>
-          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-            {appCount} compatible apps found.
-          </p>
         </div>
       </div>
 
-      <div className="grid grid-cols-12 gap-6">
-        <div className="col-span-5 text-right text-sm font-medium">
-          Factory Reset:
+      {/* Factory reset */}
+      <div className="flex items-start justify-between py-4">
+        <div>
+          <p className="text-sm font-medium">Factory reset</p>
+          <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
+            Restores all preferences to initial defaults.
+          </p>
         </div>
-        <div className="col-span-7">
+        <div className="ml-6 shrink-0">
           <button
             onClick={handleReset}
-            className="rounded-lg bg-red-100 px-3 py-1.5 text-sm text-red-700 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-900/50"
+            className="rounded-md bg-red-50 px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-100 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-900/50"
             type="button"
           >
             Reset
           </button>
-          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-            Restores all preferences to initial defaults.
-          </p>
         </div>
       </div>
     </div>
