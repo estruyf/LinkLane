@@ -29,6 +29,14 @@ LinkLane is a macOS browser picker that lets you choose which browser opens your
 | Escape | Close the picker |
 | a–z / 0–9 | Launch the browser assigned to that hotkey |
 
+## Install
+
+```bash
+brew install --cask estruyf/tap/linklane
+```
+
+Or download the `.dmg` from the [latest release](https://github.com/estruyf/LinkLane/releases/latest). Builds are Apple Silicon only.
+
 ## Getting Started
 
 ### Prerequisites
@@ -62,7 +70,7 @@ Open **Preferences → General** and click the button to set LinkLane as your de
 
 ## Configuration
 
-Settings are stored at `~/.config/com.eliostruyf.linklane/settings.json` and include browser order, visibility, hotkey assignments, and picker window height.
+Settings are stored at `~/Library/Application Support/com.eliostruyf.linklane/settings.json` and include browser order, visibility, hotkey assignments, and picker window height.
 
 Use **Factory Reset** in preferences to restore all defaults.
 
