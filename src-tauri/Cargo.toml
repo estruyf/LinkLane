@@ -1,6 +1,6 @@
 [package]
 name = "linklane"
-version = "0.2.0"
+version = "0.3.0"
 description = "Every link finds its lane to the right browser"
 authors = ["you"]
 edition = "2021"
