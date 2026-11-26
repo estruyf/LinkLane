@@ -128,12 +128,17 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
           APPLE_SIGNING_IDENTITY: ${{ env.CERT_ID }}
+          # Signs LinkLane.app.tar.gz for the in-app updater. tauri-action then
+          # attaches latest.json, which the app reads from the latest release.
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
           args: ${{ matrix.args }}
           tagName: ${{ steps.meta.outputs.tag }}
           releaseName: "LinkLane v${{ steps.meta.outputs.version }}"
           releaseBody: "Download the `.dmg` below, or install with `brew install --cask estruyf/tap/linklane`. See the [changelog](https://github.com/estruyf/LinkLane/blob/main/CHANGELOG.md) for what changed."
           releaseDraft: false
+          includeUpdaterJson: true
           prerelease: ${{ steps.meta.outputs.prerelease }}
 
       - name: Upload artifacts

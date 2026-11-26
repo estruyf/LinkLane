@@ -15,6 +15,7 @@ LinkLane is a macOS browser picker that lets you choose which browser opens your
 - **Preferences** — Reorder browsers via drag-and-drop, hide browsers you don't use, assign hotkeys, rescan for newly installed apps, and set LinkLane as the default browser.
 - **Multi-Monitor Support** — The picker always appears on the monitor where your cursor is.
 - **40+ Browsers** — Detects Chrome, Firefox, Safari, Edge, Arc, Brave, Vivaldi, Zen, Opera, DuckDuckGo, and many more from `/Applications` and `~/Applications`.
+- **Seshboard** — If [Seshboard](https://github.com/estruyf/seshboard) is installed, it shows up like a browser and opens the link in Seshboard's Browser panel. It needs a Seshboard version with `seshboard://open` links.
 - **Auto Icon Extraction** — App icons are extracted from macOS bundles and cached at startup.
 
 ## Keyboard Shortcuts
@@ -36,6 +37,10 @@ brew install --cask estruyf/tap/linklane
 ```
 
 Or download the `.dmg` from the [latest release](https://github.com/estruyf/LinkLane/releases/latest). Builds are Apple Silicon only.
+
+## Updates
+
+LinkLane checks for updates only when you ask. Open **Preferences → About** and click **Check for updates**, or pick **Check for Updates...** in the menu bar. If a new version is available, click **Install and restart**.
 
 ## Getting Started
 
@@ -63,6 +68,19 @@ npm run tauri build
 ```
 
 The built `.dmg` will be in `src-tauri/target/release/bundle/dmg/`.
+
+The build also signs an update bundle for the in-app updater, so it needs the updater's private key:
+
+```bash
+export TAURI_SIGNING_PRIVATE_KEY="$(cat ~/.tauri/linklane.key)"
+export TAURI_SIGNING_PRIVATE_KEY_PASSWORD="<the key's password>"
+```
+
+If you don't have the key, build without the update bundle:
+
+```bash
+npm run tauri build -- --config '{"bundle":{"createUpdaterArtifacts":false}}'
+```
 
 ## Setting as Default Browser
 

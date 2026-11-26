@@ -1,6 +1,7 @@
 import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
-import { lazy, Suspense, useEffect, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useState } from "react";
 import GeneralTab from "./GeneralTab";
+import { useTauriEvent } from "../../hooks/useTauriEvent";
 
 const AppsTab = lazy(() => import("./AppsTab"));
 const AboutTab = lazy(() => import("./AboutTab"));
@@ -17,6 +18,15 @@ export default function PreferencesWindow() {
   const [activeTab, setActiveTab] = useState<Tab>("general");
   const [appsTabVisited, setAppsTabVisited] = useState(false);
   const [aboutTabVisited, setAboutTabVisited] = useState(false);
+  const [updateCheckRequest, setUpdateCheckRequest] = useState(0);
+
+  // "Check for Updates…" in the menu bar opens this window on the About tab
+  // and starts a check there.
+  const onCheckForUpdates = useCallback(() => {
+    setActiveTab("about");
+    setUpdateCheckRequest((n) => n + 1);
+  }, []);
+  useTauriEvent<null>("check-for-updates", onCheckForUpdates);
 
   useEffect(() => {
     if (activeTab === "apps") {
@@ -93,7 +103,7 @@ export default function PreferencesWindow() {
         {aboutTabVisited && (
           <div className={activeTab === "about" ? "block" : "hidden"}>
             <Suspense fallback={<div className="text-sm text-gray-500">Loading about...</div>}>
-              <AboutTab />
+              <AboutTab checkRequest={updateCheckRequest} />
             </Suspense>
           </div>
         )}

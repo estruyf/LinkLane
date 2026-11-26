@@ -16,7 +16,13 @@ pub fn setup_tray(app: &tauri::App) -> Result<(), Box<dyn std::error::Error>> {
     let open_from_clipboard =
         MenuItem::with_id(app, "open-from-clipboard", "Open Copied URL", true, None::<&str>)?;
 
-    let menu = Menu::with_items(app, &[&restore, &open_from_clipboard, &preferences, &quit])?;
+    let check_updates =
+        MenuItem::with_id(app, "check-updates", "Check for Updates...", true, None::<&str>)?;
+
+    let menu = Menu::with_items(
+        app,
+        &[&restore, &open_from_clipboard, &preferences, &check_updates, &quit],
+    )?;
 
     let _tray = TrayIconBuilder::new()
         .menu(&menu)
@@ -28,12 +34,13 @@ pub fn setup_tray(app: &tauri::App) -> Result<(), Box<dyn std::error::Error>> {
                 app.exit(0);
             }
             "preferences" => {
-                if let Some(window) = app.get_webview_window("preferences") {
-                    window.show().ok();
-                    window.set_focus().ok();
-                } else {
-                    create_preferences_window(app);
-                }
+                show_preferences(app);
+            }
+            "check-updates" => {
+                // The About tab runs the check, so the person sees its result
+                // and chooses whether to install.
+                show_preferences(app);
+                app.emit_to("preferences", "check-for-updates", ()).ok();
             }
             "restore" => {
                 restore_picker(app);
@@ -57,6 +64,15 @@ pub fn setup_tray(app: &tauri::App) -> Result<(), Box<dyn std::error::Error>> {
         .build(app)?;
 
     Ok(())
+}
+
+fn show_preferences(app: &tauri::AppHandle) {
+    if let Some(window) = app.get_webview_window("preferences") {
+        window.show().ok();
+        window.set_focus().ok();
+    } else {
+        create_preferences_window(app);
+    }
 }
 
 fn restore_picker(app: &tauri::AppHandle) {

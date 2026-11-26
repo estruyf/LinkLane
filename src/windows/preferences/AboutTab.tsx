@@ -1,13 +1,26 @@
 import { useState, useEffect } from "react";
 import { getVersion } from "@tauri-apps/api/app";
 import { openUrl } from "@tauri-apps/plugin-opener";
+import { useUpdater, type UpdateStatus } from "../../hooks/useUpdater";
 
-export default function AboutTab() {
+type Props = {
+  /** Goes up by one each time the menu bar asks for an update check. */
+  checkRequest?: number;
+};
+
+export default function AboutTab({ checkRequest = 0 }: Props) {
   const [version, setVersion] = useState("");
+  const { status, checkForUpdates, installUpdate } = useUpdater();
 
   useEffect(() => {
     getVersion().then(setVersion).catch(() => { });
   }, []);
+
+  useEffect(() => {
+    if (checkRequest > 0) {
+      void checkForUpdates();
+    }
+  }, [checkRequest, checkForUpdates]);
 
   return (
     <div className="flex h-full flex-col items-center justify-center gap-5 py-8">
@@ -32,6 +45,8 @@ export default function AboutTab() {
         </div>
       </div>
 
+      <UpdateSection status={status} onCheck={checkForUpdates} onInstall={installUpdate} />
+
       <button
         onClick={() => openUrl("https://github.com/estruyf/LinkLane")}
         className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-gray-600 dark:text-gray-600 dark:hover:text-gray-400"
@@ -42,6 +57,62 @@ export default function AboutTab() {
         </svg>
         github.com/estruyf/LinkLane
       </button>
+    </div>
+  );
+}
+
+function UpdateSection({
+  status,
+  onCheck,
+  onInstall,
+}: {
+  status: UpdateStatus;
+  onCheck: () => void;
+  onInstall: () => void;
+}) {
+  const busy =
+    status.state === "checking" || status.state === "downloading" || status.state === "restarting";
+
+  return (
+    <div className="flex w-64 flex-col items-center gap-2 text-center text-xs" data-update-status={status.state}>
+      {status.state === "available" ? (
+        <>
+          <p className="text-gray-600 dark:text-gray-300">
+            Version {status.version} is available.
+          </p>
+          <button
+            onClick={onInstall}
+            className="rounded-md bg-blue-500 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-600"
+            type="button"
+          >
+            Install and restart
+          </button>
+        </>
+      ) : (
+        <button
+          onClick={onCheck}
+          disabled={busy}
+          className="rounded-md border border-gray-200 px-3 py-1.5 text-sm font-medium hover:bg-gray-50 disabled:opacity-50 dark:border-gray-700 dark:hover:bg-gray-800"
+          type="button"
+        >
+          {status.state === "checking" ? "Checking…" : "Check for updates"}
+        </button>
+      )}
+
+      {status.state === "up-to-date" && (
+        <p className="text-gray-500 dark:text-gray-400">LinkLane is up to date.</p>
+      )}
+      {status.state === "downloading" && (
+        <p className="text-gray-500 dark:text-gray-400">
+          Downloading{status.percent !== null ? ` ${status.percent}%` : "…"}
+        </p>
+      )}
+      {status.state === "restarting" && (
+        <p className="text-gray-500 dark:text-gray-400">Restarting…</p>
+      )}
+      {status.state === "error" && (
+        <p className="text-red-600 dark:text-red-400">Update failed: {status.message}</p>
+      )}
     </div>
   );
 }

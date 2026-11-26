@@ -20,6 +20,10 @@ cask "linklane" do
   # later, so this is the floor the arch line above already implies.
   depends_on macos: :big_sur
 
+  # LinkLane can update itself (Preferences › About), so Homebrew should not
+  # treat a newer bundle than the cask version as out of date.
+  auto_updates true
+
   app "LinkLane.app"
 
   # LinkLane is a menu bar app with no Dock icon, and macOS keeps the default

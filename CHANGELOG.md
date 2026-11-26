@@ -5,6 +5,18 @@ All notable changes to LinkLane are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **Seshboard in the picker.** If Seshboard is installed, it shows up next to
+  your browsers. Picking it opens the link in the Browser panel of the
+  Seshboard session in front. It needs a Seshboard version with
+  `seshboard://open` links.
+- **Check for updates from the app.** Open Preferences › About, or pick
+  Check for Updates... in the menu bar. If a new version is available,
+  LinkLane installs it and restarts.
+
 ## [0.2.0] - 2026-08-28
 
 First public release. Everything below is what LinkLane does today; earlier

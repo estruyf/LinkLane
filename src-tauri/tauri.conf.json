@@ -34,8 +34,10 @@
   "bundle": {
     "active": true,
     "targets": [
+      "app",
       "dmg"
     ],
+    "createUpdaterArtifacts": true,
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
@@ -48,6 +50,12 @@
     ]
   },
   "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEJBMTdDOUJDNzgxMzFCNDgKUldSSUd4TjR2TWtYdWhVOUwxdjgrUUJwd09pUzdvZHZnMUpaRnlxUmVha2EyY3NRaE1qWEdlOE0K",
+      "endpoints": [
+        "https://github.com/estruyf/LinkLane/releases/latest/download/latest.json"
+      ]
+    },
     "deep-link": {
       "desktop": {
         "schemes": [
